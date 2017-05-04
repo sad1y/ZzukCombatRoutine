@@ -82,7 +82,7 @@ namespace Zoth.Bot.CombatRoutine
                 if (result) return result;
             }
 
-            if( Player.ManaPercent > 80 && 
+            if (Player.ManaPercent > 80 &&
                 !Player.GotAura(SpellNames.LightningShield) &&
                 SpellBook.IsSpellReady(SpellNames.LightningShield))
             {
@@ -90,7 +90,7 @@ namespace Zoth.Bot.CombatRoutine
                 return true;
             }
 
-            return true;
+            return false;
         }
 
         public override void OnPull()
@@ -112,9 +112,10 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void OnFight()
         {
+
             if (!HasTarget() || Player.IsCasting()) return;
 
-            if (Player.HealthPercent <= 5)
+            if (Player.HealthPercent <= 10)
             {
                 var potion = Bag
                     .GetPotionsSortedByPriority()
@@ -155,7 +156,8 @@ namespace Zoth.Bot.CombatRoutine
                 }
             }
 
-            if (Target.DistanceToPlayer > 10 &&
+
+            if (Target.DistanceToPlayer > 20 &&
                 Target.DistanceToPlayer < 30 &&
                 Player.ManaPercent > 50 &&
                 SpellBook.IsSpellReady(SpellNames.LightningBolt))
@@ -177,7 +179,7 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
-            if (Target.InRange(20) && Player.ManaPercent > 20)
+            if (Target.InRange(20) && Player.ManaPercent > 40)
             {
                 if (!Target.GotDebuff(SpellNames.FlameShock) && Player.CanCastSpell(SpellNames.FlameShock))
                 {
@@ -199,7 +201,7 @@ namespace Zoth.Bot.CombatRoutine
                 }
             }
 
-            if(Player.IsTotemSpawned(SpellNames.SearingTotem) > 0 && Player.CanCastSpell(SpellNames.SearingTotem))
+            if (Player.CanCastSpell(SpellNames.SearingTotem) && Player.IsTotemSpawned(SpellNames.SearingTotem) > 0)
             {
                 SpellBook.Cast(SpellNames.SearingTotem);
                 return;
@@ -211,6 +213,7 @@ namespace Zoth.Bot.CombatRoutine
             }
 
             SpellBook.Attack();
+
         }
 
         public override void OnRest()
