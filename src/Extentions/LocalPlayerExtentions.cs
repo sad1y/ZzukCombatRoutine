@@ -7,6 +7,8 @@ namespace Zoth.Bot.CombatRoutine.Extentions
 {
     public static class LocalPlayerExtentions
     {
+        private static Spell SpellBook => Spell.Instance;
+
         public static bool CanMove(this LocalPlayer player)
         {
             return
@@ -28,11 +30,11 @@ namespace Zoth.Bot.CombatRoutine.Extentions
                 !player.IsStunned;
         }
 
-        public static bool CanCastSpell(this LocalPlayer player, Spell spellBook, string spellName)
+        public static bool CanCastSpell(this LocalPlayer player, string spellName)
         {
             return !player.IsCasting() &&
                 player.CanCast() &&
-                spellBook.IsSpellReady(spellName);
+                SpellBook.IsSpellReady(spellName);
         }
 
         public static bool IsInLos(this LocalPlayer player, WoWUnit unit)
