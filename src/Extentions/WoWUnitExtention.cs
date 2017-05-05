@@ -9,5 +9,10 @@ namespace Zoth.Bot.CombatRoutine.Extentions
             if (unit == null) return false;
             return unit.Casting > 0 || unit.Channeling > 0;
         }
+
+        public static bool CanBeKilled(this WoWUnit unit )
+        {
+            return unit != null && !unit.IsDead;
+        }
     }
 }

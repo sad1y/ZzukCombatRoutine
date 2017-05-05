@@ -31,11 +31,6 @@ namespace Zoth.Bot.CombatRoutine
             CombatDistance = 30;
         }
 
-        private bool HasTarget()
-        {
-            return Target != null && !Target.IsDead;
-        }
-
         private bool IsTwoHandedEquiped()
         {
             var item = Bag.GetEquippedItem(Enums.EquipSlot.MainHand);
@@ -95,7 +90,7 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void OnPull()
         {
-            if (!HasTarget() || Player.IsCasting()) return;
+            if (!Target.CanBeKilled() || Player.IsCasting()) return;
 
             if (Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
             {
@@ -112,8 +107,9 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void OnFight()
         {
+            var target = Target; // clear target workaround
 
-            if (!HasTarget() || Player.IsCasting()) return;
+            if (!target.CanBeKilled() || Player.IsCasting()) return;
 
             if (Player.HealthPercent <= 10)
             {
@@ -157,8 +153,9 @@ namespace Zoth.Bot.CombatRoutine
             }
 
 
-            if (Target.DistanceToPlayer > 20 &&
-                Target.DistanceToPlayer < 30 &&
+            if (target.CanBeKilled() && 
+                target.DistanceToPlayer > 20 &&
+                target.DistanceToPlayer < 30 &&
                 Player.ManaPercent > 50 &&
                 SpellBook.IsSpellReady(SpellNames.LightningBolt))
             {
@@ -167,7 +164,7 @@ namespace Zoth.Bot.CombatRoutine
             }
 
             // if target cast something we prefer to interrupt it
-            if (Target.IsCasting() && Player.CanCastSpell(SpellNames.EarthShock))
+            if (target.CanBeKilled() && target.IsCasting() && Player.CanCastSpell(SpellNames.EarthShock))
             {
                 SpellBook.Cast(SpellNames.EarthShock);
                 return;
@@ -179,9 +176,9 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
-            if (Target.InRange(20) && Player.ManaPercent > 40)
+            if (target.CanBeKilled() && target.InRange(20) && Player.ManaPercent > 40)
             {
-                if (!Target.GotDebuff(SpellNames.FlameShock) && Player.CanCastSpell(SpellNames.FlameShock))
+                if (!target.GotDebuff(SpellNames.FlameShock) && Player.CanCastSpell(SpellNames.FlameShock))
                 {
                     SpellBook.Cast(SpellNames.FlameShock);
                     return;
@@ -207,7 +204,7 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
-            if (!Target.InRange(5))
+            if (!target.InRange(5))
             {
                 CombatDistance = 5f;
             }
