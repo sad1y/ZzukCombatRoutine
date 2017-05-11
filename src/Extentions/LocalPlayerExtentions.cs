@@ -52,14 +52,14 @@ namespace Zoth.Bot.CombatRoutine.Extentions
             return player.Casting > 0 || player.Channeling > 0;
         }
 
-        public static bool IsMoving(this LocalPlayer player)
-        {
-            return player.MovementState == 1;
-        }
+        //public static bool IsMoving(this LocalPlayer player)
+        //{
+        //    return player.MovementState > 0;
+        //}
 
-        public static bool IsIdle(this LocalPlayer player)
-        {
-            return !player.IsMoving() && !player.IsCasting();
-        }
+        //public static bool IsIdle(this LocalPlayer player)
+        //{
+        //    return !player.IsMoving() && !player.IsCasting();
+        //}
     }
 }

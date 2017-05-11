@@ -19,8 +19,6 @@ namespace Zoth.Bot.CombatRoutine
         private static WoWUnit Target => ObjectManager.Instance.Target;
         private static Inventory Bag => Inventory.Instance;
 
-        public override bool CanAoE(int numberOfMobs) => false;
-
         public override Enums.ClassId Class => Enums.ClassId.Shaman;
 
         public EnchShaman()
@@ -28,7 +26,6 @@ namespace Zoth.Bot.CombatRoutine
             Author = "zoth";
             Name = "Ench.Shaman";
             Version = new Version("0.0.0.1");
-            CombatDistance = 30;
         }
 
         private bool IsTwoHandedEquiped()
@@ -68,48 +65,64 @@ namespace Zoth.Bot.CombatRoutine
             return true;
         }
 
-        public override bool OnBuff()
+        private bool ShouldRebuffLightingShield()
+        {
+            return Player.ManaPercent > 80 &&
+                !Player.GotAura(SpellNames.LightningShield) &&
+                SpellBook.IsSpellReady(SpellNames.LightningShield);
+        }
+
+        public override bool IsBuffRequired()
+        {
+            return !Player.IsMainhandEnchanted() || ShouldRebuffLightingShield();
+        }
+
+        public override void Rebuff()
         {
             if (!Player.IsMainhandEnchanted())
             {
-                var result = UseMoreUsefulEnchanceSpell();
-
-                if (result) return result;
-            }
-
-            if (Player.ManaPercent > 80 &&
-                !Player.GotAura(SpellNames.LightningShield) &&
-                SpellBook.IsSpellReady(SpellNames.LightningShield))
-            {
-                SpellBook.Cast(SpellNames.LightningShield);
-                return true;
-            }
-
-            return false;
-        }
-
-        public override void OnPull()
-        {
-            if (!Target.CanBeKilled() || Player.IsCasting()) return;
-
-            if (Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
-            {
-                CombatDistance = 30;
-
-                SpellBook.Cast(SpellNames.LightningBolt);
+                UseMoreUsefulEnchanceSpell();
                 return;
             }
 
-            SpellBook.Attack();
-
-            CombatDistance = 5f;
+            if (ShouldRebuffLightingShield())
+            {
+                SpellBook.Cast(SpellNames.LightningShield);
+            }
         }
 
-        public override void OnFight()
+        public override float GetPullDistance() => 30;
+
+        public override float GetKiteDistance() => 20;
+
+        public override int GetMaxPullCount() => 1;
+
+        public override Enums.CombatPosition GetCombatPosition() => Enums.CombatPosition.Kite;
+
+        public override bool CanWin(IEnumerable<WoWUnit> possibleTargets) => true;
+
+        public override bool CanBuffAnotherPlayer() => false;
+
+        public override bool IsReadyToFight(IEnumerable<WoWUnit> possibleTargets)
         {
-            var target = Target; // clear target workaround
+            if(possibleTargets.Count() <= 1)
+            {
+                return Player.ManaPercent > 60 && Player.HealthPercent > 60;
+            }
+
+            return Player.ManaPercent > 80 && Player.HealthPercent > 80;
+        }
+
+        public override void Fight(IEnumerable<WoWUnit> possibleTargets)
+        {
+            var target = possibleTargets.FirstOrDefault(); // clear target workaround
 
             if (!target.CanBeKilled() || Player.IsCasting()) return;
+
+            if (Player.ManaPercent < 50 || Player.HealthPercent < 50 || target.InRange(15))
+            {
+                SuppressBotMovement = false;
+            }
 
             if (Player.HealthPercent <= 10)
             {
@@ -125,7 +138,7 @@ namespace Zoth.Bot.CombatRoutine
                 }
             }
 
-            if (Player.HealthPercent < 50 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
+            if (Player.HealthPercent < 50 && SpellBook.IsSpellReady(SpellNames.HealingWave))
             {
                 SpellBook.Cast(SpellNames.HealingWave);
                 return;
@@ -139,21 +152,20 @@ namespace Zoth.Bot.CombatRoutine
                     return;
                 }
 
-                if (Player.IsTotemSpawned(SpellNames.StoneclawTotem) <= 0 && Player.CanCastSpell(SpellNames.StoneskinTotem))
-                {
-                    SpellBook.Cast(SpellNames.StoneskinTotem);
-                    return;
-                }
+                //if (Player.IsTotemSpawned(SpellNames.StoneclawTotem) <= 0 && Player.CanCastSpell(SpellNames.StoneskinTotem))
+                //{
+                //    SpellBook.Cast(SpellNames.StoneskinTotem);
+                //    return;
+                //}
 
-                if (Player.IsTotemSpawned(SpellNames.HealingStreamTotem) <= 0 && Player.CanCastSpell(SpellNames.HealingStreamTotem))
-                {
-                    SpellBook.Cast(SpellNames.HealingStreamTotem);
-                    return;
-                }
+                //if (Player.IsTotemSpawned(SpellNames.HealingStreamTotem) <= 0 && Player.CanCastSpell(SpellNames.HealingStreamTotem))
+                //{
+                //    SpellBook.Cast(SpellNames.HealingStreamTotem);
+                //    return;
+                //}
             }
 
-
-            if (target.CanBeKilled() && 
+            if (target.CanBeKilled() &&
                 target.DistanceToPlayer > 20 &&
                 target.DistanceToPlayer < 30 &&
                 Player.ManaPercent > 50 &&
@@ -204,23 +216,45 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
-            if (!target.InRange(5))
+            SpellBook.Attack();
+        }
+
+        public override void Pull(WoWUnit target)
+        {
+            if (!Target.CanBeKilled() || Player.IsCasting()) return;
+
+            if (Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
             {
-                CombatDistance = 5f;
+                SpellBook.Cast(SpellNames.LightningBolt);
+                return;
             }
 
             SpellBook.Attack();
-
         }
 
-        public override void OnRest()
+        public override void OnFightEnded()
         {
-            CombatDistance = 30;
-
-            if (Player.ManaPercent > 80 && Player.HealthPercent < 80)
-            {
-                SpellBook.Cast(SpellNames.HealingWave);
-            }
+            SuppressBotMovement = true;
         }
+
+        public override void TryToBuffAnotherPlayer(WoWUnit player)
+        {
+            
+        }
+
+        public override void PrepareForFight()
+        {
+            // drink something
+        }
+
+        //public override void OnRest()
+        //{
+        //    CombatDistance = 30;
+
+        //    if (Player.ManaPercent > 80 && Player.HealthPercent < 80)
+        //    {
+        //        SpellBook.Cast(SpellNames.HealingWave);
+        //    }
+        //}
     }
 }
