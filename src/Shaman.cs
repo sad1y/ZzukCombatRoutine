@@ -21,6 +21,8 @@ namespace Zoth.Bot.CombatRoutine
 
         public override Enums.ClassId Class => Enums.ClassId.Shaman;
 
+        private Enums.CombatPosition _combatPosition = Enums.CombatPosition.Before;
+
         public EnchShaman()
         {
             Author = "zoth";
@@ -91,15 +93,25 @@ namespace Zoth.Bot.CombatRoutine
             }
         }
 
-        public override float GetPullDistance() => 30;
+        public override float GetPullDistance()
+        {
+            if (!Player.IsInCombat) return 29;
+
+            if (Player.ManaPercent > 50 && SpellBook.IsSpellReady(SpellNames.EarthShock))
+            {
+                return 19;
+            }
+
+            return 0;   
+        }
 
         public override float GetKiteDistance() => 20;
 
-        public override int GetMaxPullCount() => 1;
+        public override int GetMaxPullCount() => 2;
 
-        public override Enums.CombatPosition GetCombatPosition() => Enums.CombatPosition.Kite;
+        public override Enums.CombatPosition GetCombatPosition() => _combatPosition;
 
-        public override bool CanWin(IEnumerable<WoWUnit> possibleTargets) => true;
+        public override bool CanWin(IEnumerable<WoWUnit> possibleTargets) => possibleTargets.Count() < 3 && Player.HealthPercent > 30;
 
         public override bool CanBuffAnotherPlayer() => false;
 
@@ -115,14 +127,16 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void Fight(IEnumerable<WoWUnit> possibleTargets)
         {
-            var target = possibleTargets.FirstOrDefault(); // clear target workaround
+            var target = possibleTargets.FirstOrDefault();
+
+            Player.SetTarget(target);
 
             if (!target.CanBeKilled() || Player.IsCasting()) return;
 
-            if (Player.ManaPercent < 50 || Player.HealthPercent < 50 || target.InRange(15))
-            {
-                SuppressBotMovement = false;
-            }
+            //if (target.InRange(15))
+            //{
+            //    SuppressBotMovement = true;
+            //}
 
             if (Player.HealthPercent <= 10)
             {
@@ -221,7 +235,15 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void Pull(WoWUnit target)
         {
-            if (!Target.CanBeKilled() || Player.IsCasting()) return;
+            if (!target.CanBeKilled() || Player.IsCasting()) return;
+
+            Player.SetTarget(target);
+
+            if(Player.IsInCombat && SpellBook.IsSpellReady(SpellNames.EarthShock) && target.InRange(20))
+            {
+                SpellBook.Cast(SpellNames.EarthShock);
+                return;
+            }
 
             if (Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
             {
@@ -234,7 +256,7 @@ namespace Zoth.Bot.CombatRoutine
 
         public override void OnFightEnded()
         {
-            SuppressBotMovement = true;
+            SuppressBotMovement = false;
         }
 
         public override void TryToBuffAnotherPlayer(WoWUnit player)
@@ -246,15 +268,5 @@ namespace Zoth.Bot.CombatRoutine
         {
             // drink something
         }
-
-        //public override void OnRest()
-        //{
-        //    CombatDistance = 30;
-
-        //    if (Player.ManaPercent > 80 && Player.HealthPercent < 80)
-        //    {
-        //        SpellBook.Cast(SpellNames.HealingWave);
-        //    }
-        //}
     }
 }
