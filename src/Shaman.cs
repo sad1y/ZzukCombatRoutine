@@ -160,23 +160,23 @@ namespace Zoth.Bot.CombatRoutine
 
             if (World.GetAttackers().Count() >= 1)
             {
-                if (Player.CanCastSpell(SpellNames.StoneclawTotem))
+                if (HasTotem(ItemNames.Totems.EarthTotem) && Player.CanCastSpell(SpellNames.StoneclawTotem))
                 {
                     SpellBook.Cast(SpellNames.StoneclawTotem);
                     return;
                 }
 
-                //if (Player.IsTotemSpawned(SpellNames.StoneclawTotem) <= 0 && Player.CanCastSpell(SpellNames.StoneskinTotem))
-                //{
-                //    SpellBook.Cast(SpellNames.StoneskinTotem);
-                //    return;
-                //}
+                if (HasTotem(ItemNames.Totems.EarthTotem) && Player.IsTotemSpawned(SpellNames.StoneclawTotem) <= 0 && Player.CanCastSpell(SpellNames.StoneskinTotem))
+                {
+                    SpellBook.Cast(SpellNames.StoneskinTotem);
+                    return;
+                }
 
-                //if (Player.IsTotemSpawned(SpellNames.HealingStreamTotem) <= 0 && Player.CanCastSpell(SpellNames.HealingStreamTotem))
-                //{
-                //    SpellBook.Cast(SpellNames.HealingStreamTotem);
-                //    return;
-                //}
+                if (HasTotem(ItemNames.Totems.WaterTotem) && Player.IsTotemSpawned(SpellNames.HealingStreamTotem) <= 0 && Player.CanCastSpell(SpellNames.HealingStreamTotem))
+                {
+                    SpellBook.Cast(SpellNames.HealingStreamTotem);
+                    return;
+                }
             }
 
             if (target.CanBeKilled() &&
@@ -224,7 +224,7 @@ namespace Zoth.Bot.CombatRoutine
                 }
             }
 
-            if (Player.CanCastSpell(SpellNames.SearingTotem) && Player.IsTotemSpawned(SpellNames.SearingTotem) > 0)
+            if (HasTotem(ItemNames.Totems.FireTotem) && Player.CanCastSpell(SpellNames.SearingTotem) && Player.IsTotemSpawned(SpellNames.SearingTotem) > 0)
             {
                 SpellBook.Cast(SpellNames.SearingTotem);
                 return;
@@ -245,13 +245,18 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
-            if (Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt))
+            if(Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt) && !target.InRange(13))
             {
                 SpellBook.Cast(SpellNames.LightningBolt);
                 return;
             }
 
             SpellBook.Attack();
+        }
+
+        private bool HasTotem(string totemName)
+        {
+            return Cache.Instance.Totems.Any(item => item.Name == totemName);
         }
 
         public override void OnFightEnded()
@@ -267,6 +272,7 @@ namespace Zoth.Bot.CombatRoutine
         public override void PrepareForFight()
         {
             // drink something
+
         }
     }
 }

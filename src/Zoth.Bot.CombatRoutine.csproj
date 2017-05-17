@@ -57,10 +57,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cache.cs" />
     <Compile Include="Extentions\InventoryExtention.cs" />
     <Compile Include="Extentions\LocalPlayerExtentions.cs" />
     <Compile Include="Extentions\WoWItemExtention.cs" />
     <Compile Include="Extentions\WoWUnitExtention.cs" />
+    <Compile Include="ItemNames.cs" />
     <Compile Include="Potions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shaman.cs" />
