@@ -133,7 +133,7 @@ namespace Zoth.Bot.CombatRoutine
 
             if (!target.CanBeKilled() || Player.IsCasting()) return;
 
-            if(target != Target)
+            if (!target.Equals(Target))
                 Player.SetTarget(target);
 
             //if (target.InRange(15))
@@ -240,7 +240,8 @@ namespace Zoth.Bot.CombatRoutine
         {
             if (!target.CanBeKilled() || Player.IsCasting()) return;
 
-            Player.SetTarget(target);
+            if(!target.Equals(Target))
+                Player.SetTarget(target);
 
             if(Player.IsInCombat && SpellBook.IsSpellReady(SpellNames.EarthShock) && target.InRange(20))
             {
