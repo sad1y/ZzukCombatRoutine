@@ -77,6 +77,7 @@ namespace Zoth.Bot.CombatRoutine
         public override bool IsBuffRequired()
         {
             return !Player.IsMainhandEnchanted() || ShouldRebuffLightingShield();
+            // return ShouldRebuffLightingShield();
         }
 
         public override void Rebuff()
