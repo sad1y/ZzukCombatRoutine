@@ -11,6 +11,7 @@ namespace Zoth.Bot.CombatRoutine
         #region Mage
         public const string Fireball = "Fireball";
         public const string FrostArmor = "Frost Armor";
+        public const string FrostBolt = "Frostbolt";
         #endregion
 
         #region Shaman 

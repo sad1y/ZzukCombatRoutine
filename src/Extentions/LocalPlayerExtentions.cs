@@ -30,6 +30,11 @@ namespace Zoth.Bot.CombatRoutine.Extentions
                 !player.IsStunned;
         }
 
+        public static bool HasSpell(this LocalPlayer player, string spellName)
+        {
+            return SpellBook.GetSpellRank(spellName) > 0;
+        }
+
         public static bool CanCastSpell(this LocalPlayer player, string spellName)
         {
             return !player.IsCasting() &&
@@ -51,6 +56,8 @@ namespace Zoth.Bot.CombatRoutine.Extentions
         {
             return player.Casting > 0 || player.Channeling > 0;
         }
+
+
 
         //public static bool IsMoving(this LocalPlayer player)
         //{
