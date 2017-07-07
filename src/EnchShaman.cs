@@ -96,14 +96,14 @@ namespace Zoth.Bot.CombatRoutine
 
         public override float GetPullDistance()
         {
-            if (!Player.IsInCombat) return 29;
+            if (Player.ManaPercent > 60 && !Player.IsInCombat) return 28;
 
             if (Player.ManaPercent > 50 && SpellBook.IsSpellReady(SpellNames.EarthShock))
             {
                 return 19;
             }
 
-            return 0;   
+            return 3;   
         }
 
         public override float GetKiteDistance() => 20;
@@ -234,6 +234,7 @@ namespace Zoth.Bot.CombatRoutine
                 return;
             }
 
+            _combatPosition = Enums.CombatPosition.Before;
             SpellBook.Attack();
         }
 
@@ -241,21 +242,19 @@ namespace Zoth.Bot.CombatRoutine
         {
             if (!target.CanBeKilled() || Player.IsCasting()) return;
 
-            if(!target.Equals(Target))
-                Player.SetTarget(target);
-
             if(Player.IsInCombat && SpellBook.IsSpellReady(SpellNames.EarthShock) && target.InRange(20))
             {
                 SpellBook.Cast(SpellNames.EarthShock);
                 return;
             }
 
-            if(Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt) && !target.InRange(13))
+            if(!Player.IsInCombat && Player.ManaPercent > 60 && SpellBook.IsSpellReady(SpellNames.LightningBolt) && target.InRange(28))
             {
                 SpellBook.Cast(SpellNames.LightningBolt);
                 return;
             }
 
+            _combatPosition = Enums.CombatPosition.Before;
             SpellBook.Attack();
         }
 
